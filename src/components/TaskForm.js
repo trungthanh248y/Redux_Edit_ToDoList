@@ -1,13 +1,19 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import * as action from '../actions/index';
 
 class TaskForm extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {};
+        this.state = {
+            id: '',
+            name: '',
+            status: false,
+        };
     }
 
-    componentWillMount() {
+    componentDidMount() {
         if(this.props.itemEditing && this.props.itemEditing.id !== null){
             this.setState({
                 id : this.props.itemEditing.id,
@@ -20,6 +26,7 @@ class TaskForm extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
+        // console.log(nextProps);
         if(nextProps && nextProps.itemEditing){
             this.setState({
                 id : nextProps.itemEditing.id,
@@ -40,9 +47,13 @@ class TaskForm extends Component {
         });
     }
 
-    onHandleSubmit = (event) => {
+    onSave = (event) => {
         event.preventDefault();
-        this.props.onSave(this.state);
+        if(this.props.itemEditing) {
+            this.props.onUpdateTask(this.state);
+        } else {
+            this.props.onSaveTask(this.state);
+        }
         this.onClear();
         this.onExitForm();
     }
@@ -56,10 +67,12 @@ class TaskForm extends Component {
     }
 
     onExitForm = () => {
-        this.props.onExitForm();
+        // this.props.onExitForm();
+        this.props.onCloseForm();
     }
 
     render() {
+        if(this.props.isDisplayForm ===false) return null;
         return (
             <div className="panel panel-warning">
                 <div className="panel-heading">
@@ -72,7 +85,7 @@ class TaskForm extends Component {
                     </h3>
                 </div>
                 <div className="panel-body">
-                    <form onSubmit={this.onHandleSubmit} >
+                    <form onSubmit={this.onSave} >
                         <div className="form-group">
                             <label>Tên :</label>
                             <input
@@ -108,4 +121,26 @@ class TaskForm extends Component {
     }
 }
 
-export default TaskForm;
+const mapStateToProps = (state) => {
+    // console.log('Form',state.tasks)
+    return {
+        isDisplayForm : state.isDisplayForm,
+        itemEditing: state.itemEditing,
+    }
+};
+
+const mapDispatchToProps = (dispatch, props) => {
+    return {
+        onSaveTask : (task) => {
+            dispatch(action.saveTask(task))
+        },
+        onUpdateTask : (task) => {
+            dispatch(action.updateTask(task))
+        },
+        onCloseForm : () => {
+            dispatch(action.closeForm());
+        },
+    }
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(TaskForm);//Tham số thứ 2 là một action để nó gửi lên store
