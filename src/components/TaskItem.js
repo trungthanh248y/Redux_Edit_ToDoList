@@ -1,38 +1,45 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import * as action from '../actions/index';
 
 class TaskItem extends Component {
 
     showStatusElement(){
         return (
             <span
-                className={ this.props.task.status ? 'label label-danger' : 'label label-info' }
+                className={ this.props.task.get('status') ? 'label label-danger' : 'label label-info' }
                 onClick={ this.onUpdateStatus }
-            >{ this.props.task.status === true ? 'Kích Hoạt' : 'Ẩn' }</span>
+            >{ this.props.task.get('status') === true ? 'Kích Hoạt' : 'Ẩn' }</span>
         );
     }
 
     onUpdateStatus = () => {
-        this.props.onUpdateStatus(this.props.task.id);
+        this.props.onUpdateStatus(this.props.index);
     }
 
     onDeleteItem = () => {
-        this.props.onDeleteTask(this.props.task.id);
+        const notification = window.confirm('Ban co chac muon xoa khong');
+        if(notification === true) {
+            this.props.onDeleteTask(this.props.index);
+        }
     }
 
-    onSelectedItem = () => {
-        this.props.onSelectedItem(this.props.task);
+    onEditTask = () => {
+        this.props.onOpenForm();
+        // console.log(this.props.task);
+        this.props.onEditTask(this.props.task);
     }
 
     render() {
         return (
             <tr>
-                <td>{ this.props.index }</td>
-                <td>{ this.props.task.name }</td>
+                <td>{ this.props.index + 1 }</td>
+                <td>{ this.props.task.get('name') }</td>
                 <td className="text-center">
                     { this.showStatusElement() }
                 </td>
                 <td className="text-center">
-                    <button type="button" className="btn btn-warning" onClick={ this.onSelectedItem }>
+                    <button type="button" className="btn btn-warning" onClick={ this.onEditTask }>
                         <span className="fa fa-pencil mr-5"></span>Sửa
                     </button>
                     &nbsp;
@@ -45,4 +52,26 @@ class TaskItem extends Component {
     }
 }
 
-export default TaskItem;
+const mapStateToProps = (state) => {
+    return {
+    }
+}
+
+const mapDispatchToProps = (dispatch, props) => {
+    return {
+        onUpdateStatus: (id) => {
+            dispatch(action.updateStatus(id));
+        },
+        onDeleteTask: (id) => {
+            dispatch(action.deleteTask(id));
+        },
+        onOpenForm: () => {
+            dispatch(action.openForm());
+        },
+        onEditTask : (task) => {
+            dispatch(action.editTask(task))
+        }
+    }
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(TaskItem);
